@@ -1,0 +1,5 @@
+# ตั้งค่า Supabase สำหรับระบบบันทึกอารมณ์นักเรียน
+# ห้าม commit ไฟล์นี้ขึ้น git — ใส่ .env ใน .gitignore ด้วย
+
+SUPABASE_URL=https://ywvlbaahjxdjwpeetbyy.supabase.co
+SUPABASE_ANON_KEY=sb_publishable_lPmrqIlhBX5yryL3AiGMuA_bAR1yqTi
