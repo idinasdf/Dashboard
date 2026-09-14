@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="env.js"></script>
 <style>
   :root{
     --paper:#EEF1EE;
@@ -17,10 +18,16 @@
     --line: rgba(32,38,31,0.12);
     --card:#ffffff;
 
-    --calm:#6E97A0;   --calm-soft:#DCE7E8;
-    --happy:#E5A438;  --happy-soft:#F7E8CC;
-    --angry:#BF5136;  --angry-soft:#F1DAD2;
-    --sad:#5C6A8C;    --sad-soft:#DFE2EC;
+    --happy:#E5A438;    --happy-soft:#F7E8CC;
+    --excited:#D9762F;  --excited-soft:#F5DFC7;
+    --angry:#BF5136;    --angry-soft:#F1DAD2;
+    --sad:#5C6A8C;      --sad-soft:#DFE2EC;
+    --anxious:#8A6BAE;  --anxious-soft:#E7DEF0;
+    --calm:#6E97A0;     --calm-soft:#DCE7E8;
+    --tired:#7C7364;    --tired-soft:#E9E4DA;
+    --bored:#8B9088;    --bored-soft:#E5E8E3;
+    --confused:#B08A3E; --confused-soft:#F0E3C9;
+    --proud:#3E8A6E;    --proud-soft:#D8ECE3;
   }
 
   *{box-sizing:border-box;}
@@ -28,14 +35,13 @@
   body{
     min-height:100vh;
     background: var(--paper);
-    background-image:
-      radial-gradient(circle at 12% 0%, var(--paper-deep) 0%, transparent 45%);
+    background-image: radial-gradient(circle at 12% 0%, var(--paper-deep) 0%, transparent 45%);
     font-family:'Inter', sans-serif;
     color: var(--ink);
     padding: 28px 16px 60px;
   }
 
-  .wrap{ max-width: 920px; margin: 0 auto; }
+  .wrap{ max-width: 980px; margin: 0 auto; }
 
   header{
     display:flex;
@@ -56,11 +62,7 @@
     line-height:1.1;
   }
 
-  .controls{
-    display:flex;
-    gap:10px;
-    align-items:center;
-  }
+  .controls{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
 
   select, button.refresh{
     font-family:'Inter', sans-serif;
@@ -75,36 +77,52 @@
   button.refresh{ font-weight:600; }
   button.refresh:active{ transform: scale(0.97); }
 
+  .env-warning{
+    background:#F1DAD2;
+    color:#7A3822;
+    border-radius:14px;
+    padding:14px 16px;
+    font-size:13px;
+    margin-bottom:18px;
+    display:none;
+  }
+  .env-warning.show{ display:block; }
+
   .stat-grid{
     display:grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
     margin-bottom: 22px;
   }
-  @media (max-width: 640px){
-    .stat-grid{ grid-template-columns: 1fr 1fr; }
-  }
+  @media (max-width: 900px){ .stat-grid{ grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 560px){ .stat-grid{ grid-template-columns: 1fr 1fr; } }
 
   .stat{
     background: var(--tint);
-    border-radius: 18px;
-    padding: 16px 18px;
+    border-radius: 16px;
+    padding: 14px 16px;
     display:flex;
     flex-direction:column;
-    gap: 6px;
+    gap: 4px;
   }
   .stat .num{
     font-family:'Fraunces', serif;
-    font-size: 30px;
+    font-size: 26px;
     font-weight:600;
     color: var(--col);
   }
-  .stat .lbl{ font-size:13px; color: var(--ink-soft); }
+  .stat .lbl{ font-size:12.5px; color: var(--ink-soft); }
 
-  .stat.calm{ --tint: var(--calm-soft); --col: var(--calm); }
   .stat.happy{ --tint: var(--happy-soft); --col: var(--happy); }
+  .stat.excited{ --tint: var(--excited-soft); --col: var(--excited); }
   .stat.angry{ --tint: var(--angry-soft); --col: var(--angry); }
   .stat.sad{ --tint: var(--sad-soft); --col: var(--sad); }
+  .stat.anxious{ --tint: var(--anxious-soft); --col: var(--anxious); }
+  .stat.calm{ --tint: var(--calm-soft); --col: var(--calm); }
+  .stat.tired{ --tint: var(--tired-soft); --col: var(--tired); }
+  .stat.bored{ --tint: var(--bored-soft); --col: var(--bored); }
+  .stat.confused{ --tint: var(--confused-soft); --col: var(--confused); }
+  .stat.proud{ --tint: var(--proud-soft); --col: var(--proud); }
 
   .panel{
     background: var(--card);
@@ -121,84 +139,47 @@
     margin: 0 0 16px;
   }
 
-  .bars{
-    display:flex;
-    flex-direction:column;
-    gap: 12px;
-  }
-  .bar-row{
-    display:flex;
-    align-items:center;
-    gap: 12px;
-  }
-  .bar-row .lbl{
-    width: 88px;
-    flex-shrink:0;
-    font-size: 13.5px;
-    color: var(--ink-soft);
-  }
-  .bar-track{
-    flex:1;
-    height: 12px;
-    border-radius: 8px;
-    background: var(--paper-deep);
-    overflow:hidden;
-  }
-  .bar-fill{
-    height:100%;
-    border-radius: 8px;
-    background: var(--col);
-    transition: width .5s ease;
-  }
-  .bar-row .count{
-    width: 28px;
-    text-align:right;
-    font-size: 13.5px;
-    font-weight:600;
-    color: var(--ink);
-  }
+  .bars{ display:flex; flex-direction:column; gap: 10px; }
+  .bar-row{ display:flex; align-items:center; gap: 12px; }
+  .bar-row .lbl{ width: 92px; flex-shrink:0; font-size: 13px; color: var(--ink-soft); }
+  .bar-track{ flex:1; height: 11px; border-radius: 8px; background: var(--paper-deep); overflow:hidden; }
+  .bar-fill{ height:100%; border-radius: 8px; background: var(--col); transition: width .5s ease; }
+  .bar-row .count{ width: 28px; text-align:right; font-size: 13px; font-weight:600; color: var(--ink); }
 
-  table{
-    width:100%;
-    border-collapse: collapse;
-    font-size: 14px;
-  }
+  table{ width:100%; border-collapse: collapse; font-size: 14px; }
   thead th{
-    text-align:left;
-    font-weight:600;
-    color: var(--ink-soft);
-    font-size: 12.5px;
-    padding: 0 10px 10px;
-    border-bottom: 1.5px solid var(--line);
+    text-align:left; font-weight:600; color: var(--ink-soft); font-size: 12.5px;
+    padding: 0 10px 10px; border-bottom: 1.5px solid var(--line); white-space:nowrap;
   }
-  tbody td{
-    padding: 12px 10px;
-    border-bottom: 1px solid var(--line);
-  }
+  tbody td{ padding: 12px 10px; border-bottom: 1px solid var(--line); }
   tbody tr:last-child td{ border-bottom:none; }
 
   .pill{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    padding: 4px 11px;
-    border-radius: 999px;
-    font-size: 12.5px;
-    font-weight:600;
-    background: var(--tint);
-    color: var(--col);
+    display:inline-flex; align-items:center; gap:6px; padding: 4px 11px;
+    border-radius: 999px; font-size: 12.5px; font-weight:600;
+    background: var(--tint); color: var(--col);
   }
-  .pill.calm{ --tint: var(--calm-soft); --col: var(--calm); }
   .pill.happy{ --tint: var(--happy-soft); --col: var(--happy); }
+  .pill.excited{ --tint: var(--excited-soft); --col: var(--excited); }
   .pill.angry{ --tint: var(--angry-soft); --col: var(--angry); }
   .pill.sad{ --tint: var(--sad-soft); --col: var(--sad); }
+  .pill.anxious{ --tint: var(--anxious-soft); --col: var(--anxious); }
+  .pill.calm{ --tint: var(--calm-soft); --col: var(--calm); }
+  .pill.tired{ --tint: var(--tired-soft); --col: var(--tired); }
+  .pill.bored{ --tint: var(--bored-soft); --col: var(--bored); }
+  .pill.confused{ --tint: var(--confused-soft); --col: var(--confused); }
+  .pill.proud{ --tint: var(--proud-soft); --col: var(--proud); }
 
-  .empty, .loading, .err{
-    text-align:center;
-    padding: 40px 10px;
+  .cause-tag{
+    font-size:12.5px;
     color: var(--ink-soft);
-    font-size: 14px;
+    background: var(--paper-deep);
+    padding: 3px 9px;
+    border-radius: 999px;
+    display:inline-block;
   }
+
+  .empty, .loading, .err{ text-align:center; padding: 40px 10px; color: var(--ink-soft); font-size: 14px; }
   .err{ color: var(--angry); }
 
   .table-scroll{ overflow-x:auto; }
@@ -217,25 +198,42 @@
         <option value="week">7 วันล่าสุด</option>
         <option value="all" selected>ทั้งหมด</option>
       </select>
+      <select id="causeFilter">
+        <option value="">ทุกสาเหตุ</option>
+        <option value="การเรียน">การเรียน / การบ้าน</option>
+        <option value="เพื่อน">เพื่อนที่โรงเรียน</option>
+        <option value="ครอบครัว">ครอบครัว</option>
+        <option value="สุขภาพ">สุขภาพ / ร่างกาย</option>
+        <option value="กิจกรรม">กิจกรรม / ชมรม</option>
+        <option value="สอบ">การสอบ / ผลการเรียน</option>
+        <option value="นอนไม่พอ">นอนไม่พอ / พักผ่อนไม่พอ</option>
+        <option value="โซเชียล">โซเชียลมีเดีย</option>
+        <option value="อื่นๆ">อื่นๆ</option>
+      </select>
       <button class="refresh" id="refreshBtn">รีเฟรช</button>
     </div>
   </header>
 
+  <div class="env-warning" id="envWarning">
+    ยังไม่ได้ตั้งค่า Supabase — กรุณาสร้างไฟล์ <code>.env</code> จาก <code>.env.example</code> แล้วรัน <code>node generate-env.js</code> เพื่อสร้าง <code>env.js</code>
+  </div>
+
   <div class="stat-grid" id="statGrid">
-    <div class="stat calm"><span class="num" id="statCalm">–</span><span class="lbl">สงบ</span></div>
     <div class="stat happy"><span class="num" id="statHappy">–</span><span class="lbl">มีความสุข</span></div>
+    <div class="stat excited"><span class="num" id="statExcited">–</span><span class="lbl">ตื่นเต้น</span></div>
     <div class="stat angry"><span class="num" id="statAngry">–</span><span class="lbl">โกรธ</span></div>
     <div class="stat sad"><span class="num" id="statSad">–</span><span class="lbl">เศร้า</span></div>
+    <div class="stat anxious"><span class="num" id="statAnxious">–</span><span class="lbl">กังวล</span></div>
+    <div class="stat calm"><span class="num" id="statCalm">–</span><span class="lbl">ผ่อนคลาย</span></div>
+    <div class="stat tired"><span class="num" id="statTired">–</span><span class="lbl">เหนื่อย</span></div>
+    <div class="stat bored"><span class="num" id="statBored">–</span><span class="lbl">เบื่อ</span></div>
+    <div class="stat confused"><span class="num" id="statConfused">–</span><span class="lbl">สับสน</span></div>
+    <div class="stat proud"><span class="num" id="statProud">–</span><span class="lbl">ภูมิใจ</span></div>
   </div>
 
   <div class="panel">
     <h2>สัดส่วนอารมณ์</h2>
-    <div class="bars" id="bars">
-      <div class="bar-row"><span class="lbl">สงบ</span><div class="bar-track"><div class="bar-fill" id="fillCalm" style="width:0%; background:var(--calm);"></div></div><span class="count" id="countCalm">0</span></div>
-      <div class="bar-row"><span class="lbl">มีความสุข</span><div class="bar-track"><div class="bar-fill" id="fillHappy" style="width:0%; background:var(--happy);"></div></div><span class="count" id="countHappy">0</span></div>
-      <div class="bar-row"><span class="lbl">โกรธ</span><div class="bar-track"><div class="bar-fill" id="fillAngry" style="width:0%; background:var(--angry);"></div></div><span class="count" id="countAngry">0</span></div>
-      <div class="bar-row"><span class="lbl">เศร้า</span><div class="bar-track"><div class="bar-fill" id="fillSad" style="width:0%; background:var(--sad);"></div></div><span class="count" id="countSad">0</span></div>
-    </div>
+    <div class="bars" id="bars"></div>
   </div>
 
   <div class="panel">
@@ -243,7 +241,7 @@
     <div class="table-scroll">
       <table id="entryTable" style="display:none;">
         <thead>
-          <tr><th>ชื่อ</th><th>เลขที่</th><th>อารมณ์</th><th>วันที่</th><th>เวลา</th></tr>
+          <tr><th>ชื่อ</th><th>เลขที่</th><th>อารมณ์</th><th>สาเหตุ</th><th>วันที่</th><th>เวลา</th></tr>
         </thead>
         <tbody id="entryBody"></tbody>
       </table>
@@ -255,23 +253,56 @@
 </div>
 
 <script>
-// ====== ตั้งค่า Supabase ======
-const SUPABASE_URL = "https://ywvlbaahjxdjwpeetbyy.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_lPmrqIlhBX5yryL3AiGMuA_bAR1yqTi";
-// ================================
+// ====== ตั้งค่า Supabase (อ่านจาก env.js ซึ่งสร้างจาก .env) ======
+const ENV = window.__ENV__ || {};
+const SUPABASE_URL = ENV.SUPABASE_URL || "";
+const SUPABASE_ANON_KEY = ENV.SUPABASE_ANON_KEY || "";
+// ================================================================
 
-const supabaseClient = (SUPABASE_URL.startsWith("http"))
+const supabaseClient = (SUPABASE_URL.startsWith("http") && SUPABASE_ANON_KEY)
   ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
+if(!supabaseClient){
+  document.getElementById('envWarning').classList.add('show');
+}
+
+const moodOrder = ["happy","excited","angry","sad","anxious","calm","tired","bored","confused","proud"];
 const moodMeta = {
-  calm:  { th: "สงบ" },
-  happy: { th: "มีความสุข" },
-  angry: { th: "โกรธ" },
-  sad:   { th: "เศร้า" },
+  happy:    { th: "มีความสุข" },
+  excited:  { th: "ตื่นเต้น" },
+  angry:    { th: "โกรธ" },
+  sad:      { th: "เศร้า" },
+  anxious:  { th: "กังวล" },
+  calm:     { th: "ผ่อนคลาย" },
+  tired:    { th: "เหนื่อย" },
+  bored:    { th: "เบื่อ" },
+  confused: { th: "สับสน" },
+  proud:    { th: "ภูมิใจ" },
 };
 
+// build stat id map
+const statIdMap = {
+  happy:"statHappy", excited:"statExcited", angry:"statAngry", sad:"statSad",
+  anxious:"statAnxious", calm:"statCalm", tired:"statTired", bored:"statBored",
+  confused:"statConfused", proud:"statProud"
+};
+
+// build bar rows once
+const barsContainer = document.getElementById('bars');
+moodOrder.forEach(mood=>{
+  const row = document.createElement('div');
+  row.className = 'bar-row';
+  row.innerHTML = `
+    <span class="lbl">${moodMeta[mood].th}</span>
+    <div class="bar-track"><div class="bar-fill" id="fill_${mood}" style="width:0%; background:var(--${mood});"></div></div>
+    <span class="count" id="count_${mood}">0</span>
+  `;
+  barsContainer.appendChild(row);
+});
+
 const rangeSelect = document.getElementById('rangeSelect');
+const causeFilter = document.getElementById('causeFilter');
 const refreshBtn = document.getElementById('refreshBtn');
 const dateRangeLabel = document.getElementById('dateRangeLabel');
 
@@ -308,7 +339,7 @@ async function loadData(){
   if(!supabaseClient){
     loadingMsg.style.display = 'none';
     errMsg.style.display = 'block';
-    errMsg.textContent = 'ยังไม่ได้เชื่อมต่อฐานข้อมูล กรุณาตั้งค่า Supabase URL และ API Key ก่อน';
+    errMsg.textContent = 'ยังไม่ได้เชื่อมต่อฐานข้อมูล กรุณาตั้งค่า .env ก่อน';
     return;
   }
 
@@ -327,33 +358,29 @@ async function loadData(){
     dateRangeLabel.textContent = 'ภาพรวมทั้งหมด';
   }
 
+  if(causeFilter.value){
+    query = query.eq('cause', causeFilter.value);
+  }
+
   try{
     const { data, error } = await query;
     if(error) throw error;
 
     loadingMsg.style.display = 'none';
 
-    // สรุปตัวเลข
-    const counts = { calm:0, happy:0, angry:0, sad:0 };
+    const counts = {};
+    moodOrder.forEach(m => counts[m] = 0);
     (data || []).forEach(row => { if(counts[row.mood] !== undefined) counts[row.mood]++; });
 
-    document.getElementById('statCalm').textContent = counts.calm;
-    document.getElementById('statHappy').textContent = counts.happy;
-    document.getElementById('statAngry').textContent = counts.angry;
-    document.getElementById('statSad').textContent = counts.sad;
-
-    const total = counts.calm + counts.happy + counts.angry + counts.sad;
+    let total = 0;
+    moodOrder.forEach(m => total += counts[m]);
     const pct = (n) => total > 0 ? Math.round((n/total)*100) : 0;
 
-    document.getElementById('fillCalm').style.width = pct(counts.calm) + '%';
-    document.getElementById('fillHappy').style.width = pct(counts.happy) + '%';
-    document.getElementById('fillAngry').style.width = pct(counts.angry) + '%';
-    document.getElementById('fillSad').style.width = pct(counts.sad) + '%';
-
-    document.getElementById('countCalm').textContent = counts.calm;
-    document.getElementById('countHappy').textContent = counts.happy;
-    document.getElementById('countAngry').textContent = counts.angry;
-    document.getElementById('countSad').textContent = counts.sad;
+    moodOrder.forEach(m=>{
+      document.getElementById(statIdMap[m]).textContent = counts[m];
+      document.getElementById('fill_'+m).style.width = pct(counts[m]) + '%';
+      document.getElementById('count_'+m).textContent = counts[m];
+    });
 
     if(!data || data.length === 0){
       emptyMsg.style.display = 'block';
@@ -365,6 +392,7 @@ async function loadData(){
         <td>${escapeHtml(row.student_name)}</td>
         <td>${escapeHtml(row.student_no)}</td>
         <td><span class="pill ${row.mood}">${moodMeta[row.mood]?.th || row.mood}</span></td>
+        <td>${row.cause ? `<span class="cause-tag">${escapeHtml(row.cause)}</span>` : '<span class="cause-tag">–</span>'}</td>
         <td>${formatThaiDate(row.entry_date)}</td>
         <td>${formatTime(row.created_at)}</td>
       </tr>
@@ -386,6 +414,7 @@ function escapeHtml(str){
 }
 
 rangeSelect.addEventListener('change', loadData);
+causeFilter.addEventListener('change', loadData);
 refreshBtn.addEventListener('click', loadData);
 
 loadData();
