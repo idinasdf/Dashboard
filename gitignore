@@ -1,0 +1,7 @@
+# Environment / secrets
+.env
+env.js
+
+# OS / editor junk
+.DS_Store
+node_modules/
